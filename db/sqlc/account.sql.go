@@ -16,8 +16,7 @@ INSERT INTO accounts (
   currency
 ) VALUES (
   $1, $2, $3
-)
-RETURNING id, owner, balance, currency, created_at
+) RETURNING id, owner, balance, currency, created_at
 `
 
 type CreateAccountParams struct {
@@ -110,7 +109,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE accounts
-  set balance = $2
+SET balance = $2
 WHERE id = $1
 RETURNING id, owner, balance, currency, created_at
 `

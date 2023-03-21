@@ -12,32 +12,31 @@ import (
 const createEntry = `-- name: CreateEntry :one
 INSERT INTO entries (
   account_id,
-  balance
+  amount
 ) VALUES (
   $1, $2
-)
-RETURNING id, account_id, balance, created_at
+) RETURNING id, account_id, amount, created_at
 `
 
 type CreateEntryParams struct {
 	AccountID int64 `json:"account_id"`
-	Balance   int64 `json:"balance"`
+	Amount    int64 `json:"amount"`
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
-	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Balance)
+	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Amount)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
 		&i.AccountID,
-		&i.Balance,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getEntry = `-- name: GetEntry :one
-SELECT id, account_id, balance, created_at FROM entries
+SELECT id, account_id, amount, created_at FROM entries
 WHERE id = $1 LIMIT 1
 `
 
@@ -47,28 +46,28 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.AccountID,
-		&i.Balance,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const listEntires = `-- name: ListEntires :many
-SELECT id, account_id, balance, created_at FROM entries
+const listEntries = `-- name: ListEntries :many
+SELECT id, account_id, amount, created_at FROM entries
 WHERE account_id = $1
 ORDER BY id
 LIMIT $2
 OFFSET $3
 `
 
-type ListEntiresParams struct {
+type ListEntriesParams struct {
 	AccountID int64 `json:"account_id"`
 	Limit     int32 `json:"limit"`
 	Offset    int32 `json:"offset"`
 }
 
-func (q *Queries) ListEntires(ctx context.Context, arg ListEntiresParams) ([]Entry, error) {
-	rows, err := q.db.QueryContext(ctx, listEntires, arg.AccountID, arg.Limit, arg.Offset)
+func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
+	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (q *Queries) ListEntires(ctx context.Context, arg ListEntiresParams) ([]Ent
 		if err := rows.Scan(
 			&i.ID,
 			&i.AccountID,
-			&i.Balance,
+			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
